@@ -156,6 +156,7 @@ func registerShutdownHandler(
 		sig := <-sigs
 		logger.Info(ctx, "received interrupt signal:", sig.String())
 		err := util.DoWithTimeout(ctx, func() error {
+			cancel()
 			logger.Info(ctx, "initiating admin server shutdown")
 			if shutdownErr := adminShutdown(ctx); shutdownErr != nil {
 				logger.With("error", shutdownErr).Error(ctx, "admin shutdown error: ", shutdownErr.Error())
@@ -163,7 +164,6 @@ func registerShutdownHandler(
 			logger.Info(ctx, "initiating grpc graceful stop")
 			gracefulStop()
 			_ = logger.Sync()
-			cancel()
 			return nil
 		}, waitTime)
 		if err != nil {
